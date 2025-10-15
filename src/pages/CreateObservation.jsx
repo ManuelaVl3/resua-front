@@ -43,7 +43,6 @@ const CreateObservation = () => {
     }
   }
 
-  // Efecto para crear vista previa cuando se selecciona una imagen
   useEffect(() => {
     if (formData.image) {
       const reader = new FileReader()
@@ -52,7 +51,6 @@ const CreateObservation = () => {
       }
       reader.readAsDataURL(formData.image)
       
-      // Llamar al agente de IA para obtener sugerencias
       identifySpecies(formData.image)
     } else {
       setImagePreview(null)
@@ -60,7 +58,6 @@ const CreateObservation = () => {
     }
   }, [formData.image])
 
-  // Función para identificar especies usando IA
   const identifySpecies = async (file) => {
     setIsLoadingSuggestions(true)
     setAiSuggestions([])
@@ -76,20 +73,15 @@ const CreateObservation = () => {
         }
       })
 
-      
-      
       setAiSuggestions(response.data.suggestions || [])
     } catch (error) {
       console.log('Error completo:', error)
       
       if (error.response) {
-        // El servidor respondió con un código de error
         setAiError(error.response.data.detail || 'Error al identificar la especie')
       } else if (error.request) {
-        // La petición se hizo pero no hubo respuesta
         setAiError('Error de conexión. Verifica que el servidor esté corriendo.')
       } else {
-        // Algo pasó al configurar la petición
         setAiError('Error inesperado. Intenta nuevamente.')
       }
       
@@ -99,17 +91,14 @@ const CreateObservation = () => {
     }
   }
 
-  // Función para seleccionar una sugerencia del agente de IA
   const selectSuggestion = (suggestion) => {
     setFormData(prev => ({
       ...prev,
       commonName: suggestion.commonName,
-      scientificName: suggestion.scientificName,
-      category: suggestion.category || ''
+      scientificName: suggestion.scientificName
     }))
   }
 
-  // Validar si todos los campos requeridos están completos
   const isFormValid = () => {
     return (
       formData.image &&
@@ -124,16 +113,13 @@ const CreateObservation = () => {
   const handleSubmit = (e) => {
     e.preventDefault()
     if (isFormValid()) {
-      console.log('Datos del formulario:', formData)
-      // Mostrar mensaje de confirmación
       setShowSuccessMessage(true)
       
-      // Ocultar mensaje después de 3 segundos
       setTimeout(() => {
         setShowSuccessMessage(false)
       }, 3000)
       
-      // Aquí irá la lógica para enviar al microservicio
+      //TODO: Aquí irá la lógica para enviar al microservicio que guarda la info en bd - observations-ms
     }
   }
 
@@ -158,7 +144,7 @@ const CreateObservation = () => {
         `}
       </style>
       
-      {/* Mensaje de confirmación */}
+      {}
       {showSuccessMessage && (
         <div style={{
           position: 'fixed',
@@ -176,7 +162,7 @@ const CreateObservation = () => {
           zIndex: 10000,
           animation: 'slideIn 0.3s ease-out'
         }}>
-          {/* Ícono de checkmark */}
+          {}
           <div style={{
             width: '24px',
             height: '24px',
@@ -192,7 +178,7 @@ const CreateObservation = () => {
             ✓
           </div>
           
-          {/* Texto del mensaje */}
+          {}
           <span style={{
             color: '#374151',
             fontSize: '16px',
@@ -316,7 +302,7 @@ const CreateObservation = () => {
                 </Button>
               </div>
 
-              {/* Sugerencias del agente de IA */}
+              {}
               {(isLoadingSuggestions || aiSuggestions.length > 0 || aiError) && (
                 <div style={{
                   marginBottom: '10%',
@@ -535,7 +521,7 @@ const CreateObservation = () => {
             </div>
           </div>
 
-          {/* Botón centrado horizontalmente respecto al segundo div */}
+          {}
           <div style={{
             display: 'grid',
             gridTemplateColumns: '1fr 1fr',

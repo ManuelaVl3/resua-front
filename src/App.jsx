@@ -1,9 +1,9 @@
-import CreateObservation from './pages/CreateObservation'
+import SearchObservations from './pages/SearchObservations'
 
 function App() {
   return (
     <div>
-      <CreateObservation />
+      <SearchObservations />
     </div>
   )
 }
