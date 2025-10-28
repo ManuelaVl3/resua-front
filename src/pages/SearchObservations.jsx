@@ -1,82 +1,49 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { theme } from '../styles/theme'
 import TopBar from '../components/layout/TopBar'
-import Input from '../components/common/Input'
-import Select from '../components/common/Select'
 import ObservationCard from '../components/observations/ObservationCard'
 import ChatBot from '../components/chat/ChatBot'
 import { SPECIES_CATEGORIES } from '../utils/constants'
+import AgentService from "../services/AgentService.js";
 
 const SearchObservations = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('')
+  const [observations, setObservations] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
 
-  // Datos de ejemplo
-  const observations = [
-    {
-      id: 1,
-      image: '/src/assets/images/mapspng.png',
-      commonName: 'Mono aullador rojo',
-      scientificName: 'Alouatta seniculus',
-      location: 'Oro Negro',
-      date: '10 de abril de 2024',
-      category: 'Mamíferos'
-    },
-    {
-      id: 2,
-      image: '/src/assets/images/mapspng.png',
-      commonName: 'Gavilán pollero',
-      scientificName: 'Rupornis magnirostris',
-      location: 'Centro de Armenia',
-      date: '15 de marzo de 2024',
-      category: 'Aves'
-    },
-    {
-      id: 3,
-      image: '/src/assets/images/mapspng.png',
-      commonName: 'Colibrí esmeralda',
-      scientificName: 'Amazilia saucerottei',
-      location: 'Parque de la Vida',
-      date: '22 de febrero de 2024',
-      category: 'Aves'
-    },
-    {
-      id: 4,
-      image: '/src/assets/images/mapspng.png',
-      commonName: 'Iguana verde',
-      scientificName: 'Iguana iguana',
-      location: 'Barrio Galán',
-      date: '5 de enero de 2024',
-      category: 'Reptiles'
-    },
-    {
-      id: 5,
-      image: '/src/assets/images/mapspng.png',
-      commonName: 'Armadillo',
-      scientificName: 'Dasypus novemcinctus',
-      location: 'Zona rural',
-      date: '18 de diciembre de 2023',
-      category: 'Mamíferos'
+  const agentService = new AgentService()
+
+  const loadObservations = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const response = await agentService.queryObservations("muestrame todas las observaciones")
+      console.log(response.data.result)
+      setObservations(response.data.result || [])
+    } catch (err) {
+      setError('Error al cargar las observaciones')
+      console.error('Error:', err)
+    } finally {
+      setLoading(false)
     }
-  ]
+  }
 
-  // Filtrar observaciones
-  const filteredObservations = observations.filter(observation => {
-    const matchesSearch = observation.commonName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         observation.scientificName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         observation.location.toLowerCase().includes(searchTerm.toLowerCase())
-    
-    const matchesCategory = !selectedCategory || observation.category === selectedCategory
-    
-    return matchesSearch && matchesCategory
-  })
+  useEffect(() => {
+    loadObservations()
+  }, [])
+
+  const handleChatQueryResults = (queryResults) => {
+    setObservations(queryResults)
+    setError(null)
+  }
 
   const handleViewMore = (observationId) => {
     console.log('Ver más detalles de la observación:', observationId)
     // Aquí irá la navegación a la página de detalles
   }
 
-  // Preparar opciones para el select (agregar "Todas las categorías")
   const categoryOptions = [
     { value: '', label: 'Todas las categorías' },
     ...SPECIES_CATEGORIES
@@ -96,21 +63,17 @@ const SearchObservations = () => {
           Buscar avistamientos
         </h1>
 
-        {/* Layout de dos columnas */}
         <div style={{
           display: 'grid',
           gridTemplateColumns: '1fr 2fr',
           gap: '24px',
           alignItems: 'start'
         }}>
-          {/* Columna izquierda - Chat */}
           <div>
-            <ChatBot />
+            <ChatBot onQueryResults={handleChatQueryResults} />
           </div>
 
-          {/* Columna derecha - Resultados */}
           <div>
-            {/* Contenedor de resultados con altura fija */}
             <div style={{
               backgroundColor: theme.colors.white,
               borderRadius: '15px',
@@ -119,7 +82,6 @@ const SearchObservations = () => {
               display: 'flex',
               flexDirection: 'column'
             }}>
-              {/* Header de resultados */}
               <div style={{
                 padding: '20px 24px',
                 borderBottom: `1px solid ${theme.colors.disabled}`,
@@ -131,30 +93,81 @@ const SearchObservations = () => {
                   color: theme.colors.primary,
                   margin: 0
                 }}>
-                  Avistamientos encontrados ({filteredObservations.length})
+                  Avistamientos encontrados ({observations.length})
                 </h2>
               </div>
 
-              {/* Contenido scrolleable */}
               <div style={{
                 flex: 1,
                 overflowY: 'auto',
                 padding: '20px 24px'
               }}>
-                {filteredObservations.length > 0 ? (
+                {loading ? (
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    height: '100%',
+                    flexDirection: 'column'
+                  }}>
+                    <span className="material-icons-outlined" style={{
+                      fontSize: '48px',
+                      color: theme.colors.primary,
+                      animation: 'spin 1s linear infinite'
+                    }}>
+                      refresh
+                    </span>
+                    <p style={{
+                      marginTop: '16px',
+                      color: theme.colors.primary,
+                      fontSize: '16px'
+                    }}>
+                      Cargando observaciones...
+                    </p>
+                  </div>
+                ) : error ? (
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    height: '100%',
+                    flexDirection: 'column'
+                  }}>
+                    <span className="material-icons-outlined" style={{
+                      fontSize: '48px',
+                      color: '#dc3545',
+                      marginBottom: '16px'
+                    }}>
+                      error_outline
+                    </span>
+                    <p style={{
+                      color: '#dc3545',
+                      fontSize: '16px',
+                      textAlign: 'center'
+                    }}>
+                      {error}
+                    </p>
+                  </div>
+                ) : observations.length > 0 ? (
                   <div style={{
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '20px'
                   }}>
-                    {filteredObservations.map((observation) => (
+                    {observations.map((observation) => (
                       <ObservationCard
                         key={observation.id}
-                        image={observation.image}
-                        commonName={observation.commonName}
-                        scientificName={observation.scientificName}
-                        location={observation.location}
-                        date={observation.date}
+                        image={observation.images && observation.images.length > 0 
+                          ? observation.images[0].image_url 
+                          : '/src/assets/images/default-species.jpg'}
+                        commonName={observation.species.common_name}
+                        scientificName={observation.species.scientific_name}
+                        location={observation.location.location}
+                        date={new Date(observation.created_at).toLocaleDateString('es-CO', {
+                          day: '2-digit',
+                          month: 'long',
+                          year: 'numeric'
+                        })}
                         onViewMore={() => handleViewMore(observation.id)}
                       />
                     ))}

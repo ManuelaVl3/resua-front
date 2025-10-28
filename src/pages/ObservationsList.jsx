@@ -4,11 +4,10 @@ import TopBar from '../components/layout/TopBar'
 import ObservationCard from '../components/observations/ObservationCard'
 
 const ObservationsList = () => {
-  // Datos de ejemplo
   const observations = [
     {
       id: 1,
-      image: '/src/assets/images/mapspng.png', // Usando la imagen que ya tienes como ejemplo
+      image: '/src/assets/images/mapspng.png',
       commonName: 'Mono aullador rojo',
       scientificName: 'Alouatta seniculus',
       location: 'Oro Negro',
@@ -51,7 +50,6 @@ const ObservationsList = () => {
           Avistamientos registrados
         </h1>
 
-        {/* Lista de observaciones */}
         <div style={{
           display: 'flex',
           flexDirection: 'column',

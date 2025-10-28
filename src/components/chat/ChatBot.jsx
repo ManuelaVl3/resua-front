@@ -2,8 +2,9 @@ import React, { useState, useRef, useEffect } from 'react'
 import { theme } from '../../styles/theme'
 import Button from '../common/Button'
 import Input from '../common/Input'
+import AgentService from '../../services/AgentService'
 
-const ChatBot = () => {
+const ChatBot = ({ onQueryResults }) => {
   const [messages, setMessages] = useState([
     {
       id: 1,
@@ -16,47 +17,54 @@ const ChatBot = () => {
   const [isTyping, setIsTyping] = useState(false)
   const messagesEndRef = useRef(null)
 
-  // Auto-scroll al último mensaje
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  // Simular respuesta del bot
-  const simulateBotResponse = (userMessage) => {
+  const queryAgent = async (userMessage) => {
     setIsTyping(true)
     
-    setTimeout(() => {
-      let botResponse = ''
+    try {
+      const agentService = new AgentService()
+      const response = await agentService.queryObservations(userMessage)
       
-      // Respuestas predefinidas basadas en palabras clave
-      if (userMessage.toLowerCase().includes('aves') || userMessage.toLowerCase().includes('pájaros')) {
-        botResponse = 'Las aves son vertebrados con plumas, pico y alas. En Armenia puedes encontrar muchas especies como colibríes, gavilanes y loros. ¿Te interesa alguna especie en particular?'
-      } else if (userMessage.toLowerCase().includes('mamíferos') || userMessage.toLowerCase().includes('monos')) {
-        botResponse = 'Los mamíferos son animales de sangre caliente con pelo. En nuestra región destacan los monos aulladores, armadillos y murciélagos. ¿Quieres saber más sobre alguna especie específica?'
-      } else if (userMessage.toLowerCase().includes('reptiles') || userMessage.toLowerCase().includes('lagartos')) {
-        botResponse = 'Los reptiles son animales de sangre fría con escamas. Aquí puedes encontrar iguanas, serpientes y lagartijas. ¿Hay alguna especie que te llame la atención?'
-      } else if (userMessage.toLowerCase().includes('ubicación') || userMessage.toLowerCase().includes('dónde')) {
-        botResponse = 'Las especies silvestres en Armenia se pueden encontrar en diferentes zonas: parques urbanos, zonas rurales, y áreas naturales como el Jardín Botánico del Quindío. ¿En qué zona específica te interesa buscar?'
-      } else if (userMessage.toLowerCase().includes('ayuda') || userMessage.toLowerCase().includes('información')) {
-        botResponse = 'Puedo ayudarte con información sobre especies silvestres, ubicaciones de avistamientos, características de animales, y consejos para la observación. ¿Qué te gustaría saber?'
-      } else {
-        botResponse = 'Interesante pregunta. Puedo ayudarte con información sobre especies silvestres, ubicaciones, o características de animales. ¿Hay algo específico sobre la fauna de Armenia que te interese?'
+      setMessages(prev => [...prev, {
+        id: prev.length + 1,
+        text: response.data.answer || 'He encontrado información para tu consulta.',
+        isBot: true,
+        timestamp: new Date()
+      }])
+      
+      if (onQueryResults) {
+        onQueryResults(response.data.result || [])
+      }
+    } catch (error) {
+      console.error('Error al consultar el agente:', error)
+      
+      let errorMessage = 'Lo siento, hubo un error al procesar tu consulta.'
+      
+      if (error.code === 'ECONNREFUSED' || error.message.includes('Connection refused')) {
+        errorMessage = 'El servidor no está disponible. Por favor, verifica que el backend esté corriendo en el puerto 8000.'
+      } else if (error.response?.status === 500) {
+        errorMessage = 'Error interno del servidor. Por favor, inténtalo más tarde.'
+      } else if (error.response?.status === 404) {
+        errorMessage = 'El endpoint no fue encontrado. Verifica la configuración del backend.'
       }
       
       setMessages(prev => [...prev, {
         id: prev.length + 1,
-        text: botResponse,
+        text: errorMessage,
         isBot: true,
         timestamp: new Date()
       }])
+    } finally {
       setIsTyping(false)
-    }, 1500)
+    }
   }
 
   const handleSendMessage = (e) => {
     e.preventDefault()
     if (inputMessage.trim()) {
-      // Agregar mensaje del usuario
       setMessages(prev => [...prev, {
         id: prev.length + 1,
         text: inputMessage,
@@ -64,8 +72,7 @@ const ChatBot = () => {
         timestamp: new Date()
       }])
       
-      // Simular respuesta del bot
-      simulateBotResponse(inputMessage)
+      queryAgent(inputMessage)
       
       setInputMessage('')
     }
@@ -87,7 +94,7 @@ const ChatBot = () => {
       display: 'flex',
       flexDirection: 'column'
     }}>
-      {/* Header del chat */}
+
       <div style={{
         padding: '16px 20px',
         borderBottom: `1px solid ${theme.colors.disabled}`,
@@ -130,7 +137,7 @@ const ChatBot = () => {
         </div>
       </div>
 
-      {/* Mensajes */}
+      {}
       <div style={{
         flex: 1,
         padding: '16px',
@@ -191,8 +198,7 @@ const ChatBot = () => {
             </div>
           </div>
         ))}
-        
-        {/* Indicador de escritura */}
+
         {isTyping && (
           <div style={{
             display: 'flex',
@@ -253,7 +259,6 @@ const ChatBot = () => {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input del chat */}
       <form onSubmit={handleSendMessage} style={{
         padding: '16px',
         borderTop: `1px solid ${theme.colors.disabled}`
@@ -292,7 +297,7 @@ const ChatBot = () => {
         </div>
       </form>
 
-      {/* Estilos para animaciones */}
+      {}
       <style>
         {`
           @keyframes pulse {

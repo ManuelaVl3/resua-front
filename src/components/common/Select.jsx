@@ -14,7 +14,6 @@ const Select = ({
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef(null)
 
-  // Cerrar dropdown al hacer click fuera
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -48,8 +47,7 @@ const Select = ({
           {label}
         </label>
       )}
-      
-      {/* Select personalizado */}
+
       <div
         onClick={() => setIsOpen(!isOpen)}
         style={{
@@ -70,8 +68,7 @@ const Select = ({
         <span style={{ color: value ? theme.colors.primary : theme.colors.disabled }}>
           {selectedOption ? selectedOption.label : placeholder}
         </span>
-        
-        {/* Flecha */}
+
         <span style={{
           position: 'absolute',
           right: '12px',
@@ -86,7 +83,6 @@ const Select = ({
         </span>
       </div>
 
-      {/* Opciones del dropdown */}
       {isOpen && (
         <div style={{
           position: 'absolute',

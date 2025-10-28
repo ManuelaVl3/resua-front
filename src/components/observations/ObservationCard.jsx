@@ -42,7 +42,7 @@ const ObservationCard = ({
         />
       </div>
 
-      {/* Contenido */}
+      {}
       <div style={{
         flex: 1,
         display: 'flex',
@@ -76,7 +76,7 @@ const ObservationCard = ({
             {location}
           </p>
 
-          {/* Fecha y Botón en la misma línea */}
+          {}
           <div style={{
             display: 'flex',
             justifyContent: 'space-between',

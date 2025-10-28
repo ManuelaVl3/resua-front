@@ -25,14 +25,12 @@ const Button = ({
       ...style
     }
 
-    // Tamaños
     const sizes = {
       sm: { padding: '8px 16px', fontSize: '14px' },
       md: { padding: '12px 24px', fontSize: '16px' },
       lg: { padding: '16px 32px', fontSize: '18px' }
     }
 
-    // Variantes
     const variants = {
       primary: {
         backgroundColor: disabled ? theme.colors.disabled : theme.colors.primary,
