@@ -7,6 +7,7 @@ import Button from '../components/common/Button'
 import Input from '../components/common/Input'
 import TextArea from '../components/common/TextArea'
 import Select from '../components/common/Select'
+import mapPlaceholder from '../assets/images/ui/map-placeholder.png'
 
 const CreateObservation = () => {
   const [formData, setFormData] = useState({
@@ -480,7 +481,7 @@ const CreateObservation = () => {
                   position: 'relative'
                 }}>
                   <img 
-                    src="/src/assets/images/mapspng.png" 
+                    src={mapPlaceholder} 
                     alt="Mapa de ubicación" 
                     style={{
                       width: '100%',

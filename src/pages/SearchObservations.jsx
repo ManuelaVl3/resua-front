@@ -12,6 +12,8 @@ const SearchObservations = () => {
   const [observations, setObservations] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [pageSize, setPageSize] = useState(10)
+  const [currentPage, setCurrentPage] = useState(1)
 
   const agentService = new AgentService()
 
@@ -37,11 +39,33 @@ const SearchObservations = () => {
   const handleChatQueryResults = (queryResults) => {
     setObservations(queryResults)
     setError(null)
+    setCurrentPage(1)
   }
 
   const handleViewMore = (observationId) => {
     console.log('Ver más detalles de la observación:', observationId)
     // Aquí irá la navegación a la página de detalles
+  }
+
+  // Paginación
+  const handlePageSizeChange = (e) => {
+    const newSize = parseInt(e.target.value, 10)
+    setPageSize(newSize)
+    setCurrentPage(1)
+  }
+
+  const totalPages = Math.max(1, Math.ceil(observations.length / pageSize))
+  const safeCurrentPage = Math.min(currentPage, totalPages)
+  const startIndex = (safeCurrentPage - 1) * pageSize
+  const endIndex = startIndex + pageSize
+  const visibleObservations = observations.slice(startIndex, endIndex)
+
+  const goToPrevPage = () => {
+    setCurrentPage(prev => Math.max(1, prev - 1))
+  }
+
+  const goToNextPage = () => {
+    setCurrentPage(prev => Math.min(totalPages, prev + 1))
   }
 
   const categoryOptions = [
@@ -85,7 +109,11 @@ const SearchObservations = () => {
               <div style={{
                 padding: '20px 24px',
                 borderBottom: `1px solid ${theme.colors.disabled}`,
-                flexShrink: 0
+                flexShrink: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '16px'
               }}>
                 <h2 style={{
                   fontSize: '20px',
@@ -95,6 +123,34 @@ const SearchObservations = () => {
                 }}>
                   Avistamientos encontrados ({observations.length})
                 </h2>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ color: theme.colors.primary, fontSize: '14px' }}>Mostrar:</span>
+                  <select
+                    value={pageSize}
+                    onChange={handlePageSizeChange}
+                    style={{
+                      padding: '6px 10px',
+                      borderRadius: '15px',
+                      border: `1px solid ${theme.colors.primary}`,
+                      color: theme.colors.primary,
+                      backgroundColor: 'white',
+                      cursor: 'pointer',
+                      appearance: 'none',
+                      WebkitAppearance: 'none',
+                      MozAppearance: 'none',
+                      backgroundImage: "url('data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'16\\' height=\\'16\\' viewBox=\\'0 0 24 24\\'><path fill=\\'%236a8c7a\\' d=\\'M7 10l5 5 5-5z\\'/></svg>')",
+                      backgroundRepeat: 'no-repeat',
+                      backgroundPosition: 'right 10px center',
+                      paddingRight: '34px'
+                    }}
+                  >
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                    <option value={30}>30</option>
+                    <option value={50}>50</option>
+                  </select>
+                  <span style={{ color: theme.colors.disabled, fontSize: '12px' }}>por página</span>
+                </div>
               </div>
 
               <div style={{
@@ -154,12 +210,12 @@ const SearchObservations = () => {
                     flexDirection: 'column',
                     gap: '20px'
                   }}>
-                    {observations.map((observation) => (
+                    {visibleObservations.map((observation) => (
                       <ObservationCard
                         key={observation.id}
                         image={observation.images && observation.images.length > 0 
                           ? observation.images[0].image_url 
-                          : '/src/assets/images/default-species.jpg'}
+                          : 'https://via.placeholder.com/150x180/355543/FFFFFF?text=Sin+imagen'}
                         commonName={observation.species.common_name}
                         scientificName={observation.species.scientific_name}
                         location={observation.location.location}
@@ -207,6 +263,52 @@ const SearchObservations = () => {
                   </div>
                 )}
               </div>
+              {observations.length > 0 && (
+                <div style={{
+                  padding: '12px 16px',
+                  borderTop: `1px solid ${theme.colors.disabled}`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between'
+                }}>
+                  <span style={{ color: theme.colors.disabled, fontSize: '12px' }}>
+                    Mostrando {startIndex + 1}-{Math.min(endIndex, observations.length)} de {observations.length}
+                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <button
+                      onClick={goToPrevPage}
+                      disabled={safeCurrentPage === 1}
+                      style={{
+                        padding: '8px 12px',
+                        borderRadius: '15px',
+                        border: 'none',
+                        backgroundColor: safeCurrentPage === 1 ? theme.colors.disabled : theme.colors.primary,
+                        color: 'white',
+                        cursor: safeCurrentPage === 1 ? 'not-allowed' : 'pointer'
+                      }}
+                    >
+                      Anterior
+                    </button>
+                    <span style={{ color: theme.colors.primary, fontSize: '12px' }}>
+                      Página {safeCurrentPage} de {totalPages}
+                    </span>
+                    <button
+                      onClick={goToNextPage}
+                      disabled={safeCurrentPage === totalPages}
+                      style={{
+                        padding: '8px 12px',
+                        borderRadius: '15px',
+                        border: 'none',
+                        backgroundColor: safeCurrentPage === totalPages ? theme.colors.disabled : theme.colors.primary,
+                        color: 'white',
+                        cursor: safeCurrentPage === totalPages ? 'not-allowed' : 'pointer'
+                      }}
+                    >
+                      Siguiente
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

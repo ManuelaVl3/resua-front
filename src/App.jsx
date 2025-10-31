@@ -1,4 +1,5 @@
-import SearchObservations from './pages/SearchObservations'
+import MyObservations from './pages/MyObservations'
+import SearchObservations from "./pages/SearchObservations.jsx";
 
 function App() {
   return (
