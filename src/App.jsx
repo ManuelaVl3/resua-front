@@ -1,10 +1,12 @@
 import MyObservations from './pages/MyObservations'
-import SearchObservations from "./pages/SearchObservations.jsx";
+import CreateObservation from './pages/CreateObservation'
 
 function App() {
+  const path = typeof window !== 'undefined' ? window.location.pathname : '/'
+  const isCreate = path === '/create-observation'
   return (
     <div>
-      <SearchObservations />
+      {isCreate ? <CreateObservation /> : <MyObservations />}
     </div>
   )
 }

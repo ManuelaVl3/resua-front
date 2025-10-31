@@ -2,13 +2,12 @@ import React from 'react'
 import { theme } from '../styles/theme'
 import TopBar from '../components/layout/TopBar'
 import ObservationCard from '../components/observations/ObservationCard'
-import mapPlaceholder from '../assets/images/ui/map-placeholder.png'
 
 const ObservationsList = () => {
   const observations = [
     {
       id: 1,
-      image: mapPlaceholder,
+      image: '/src/assets/images/mapspng.png',
       commonName: 'Mono aullador rojo',
       scientificName: 'Alouatta seniculus',
       location: 'Oro Negro',
@@ -16,7 +15,7 @@ const ObservationsList = () => {
     },
     {
       id: 2,
-      image: mapPlaceholder,
+      image: '/src/assets/images/mapspng.png',
       commonName: 'Gavilán pollero',
       scientificName: 'Rupornis magnirostris',
       location: 'Centro de Armenia',
@@ -24,7 +23,7 @@ const ObservationsList = () => {
     },
     {
       id: 3,
-      image: mapPlaceholder,
+      image: '/src/assets/images/mapspng.png',
       commonName: 'Colibrí esmeralda',
       scientificName: 'Amazilia saucerottei',
       location: 'Parque de la Vida',

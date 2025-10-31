@@ -1,22 +1,50 @@
-import React, { useMemo } from 'react'
+import React, { useState, useEffect } from 'react'
 import { theme } from '../styles/theme'
 import TopBar from '../components/layout/TopBar'
 import MyObservationCard from '../components/observations/MyObservationCard'
+import ObservationsService from '../services/observations/ObservationsService'
 
 const MyObservations = () => {
-  const myObservations = useMemo(() => ([
-    {
-      id: 1,
-      image: 'https://images.unsplash.com/photo-1548095115-45697e220cf3?q=80&w=800&auto=format&fit=crop',
-      commonName: 'Mono aullador rojo',
-      scientificName: 'Alouatta seniculus',
-      location: 'Oro Negro',
-      date: '10 de abril de 2024'
+  const [observations, setObservations] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+
+  const observationsService = new ObservationsService()
+
+  const loadObservations = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const response = await observationsService.getAllObservationsByUserId(1001)
+      
+      const transformedObservations = response.map(observation => ({
+        id: observation.id,
+        image: observation.images[0].imageUrl,
+        commonName: observation.species.commonName,
+        scientificName: observation.species.scientificName,
+        location: observation.location.location,
+        date: new Date(observation.createdAt).toLocaleDateString('es-CO', {
+          day: '2-digit',
+          month: 'long',
+          year: 'numeric'
+        })
+      }))
+      
+      setObservations(transformedObservations)
+    } catch (err) {
+      setError('Error al cargar tus observaciones. Por favor, inténtalo de nuevo.')
+      console.error('Error:', err)
+    } finally {
+      setLoading(false)
     }
-  ]), [])
+  }
+
+  useEffect(() => {
+    loadObservations()
+  }, [])
 
   const handleAdd = () => {
-    console.log('Agregar nuevo registro')
+    window.location.assign('/create-observation')
   }
 
   const handleEdit = (id) => {
@@ -66,19 +94,99 @@ const MyObservations = () => {
         </button>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '860px' }}>
-          {myObservations.map(o => (
-            <MyObservationCard
-              key={o.id}
-              image={o.image}
-              commonName={o.commonName}
-              scientificName={o.scientificName}
-              location={o.location}
-              date={o.date}
-              onViewMore={() => handleViewMore(o.id)}
-              onEdit={() => handleEdit(o.id)}
-              onDelete={() => handleDelete(o.id)}
-            />
-          ))}
+          {loading ? (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '60px 20px',
+              flexDirection: 'column'
+            }}>
+              <span className="material-icons-outlined" style={{
+                fontSize: '48px',
+                color: theme.colors.primary,
+                animation: 'spin 1s linear infinite'
+              }}>
+                refresh
+              </span>
+              <p style={{
+                marginTop: '16px',
+                color: theme.colors.primary,
+                fontSize: '16px'
+              }}>
+                Cargando tus observaciones...
+              </p>
+            </div>
+          ) : error ? (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '60px 20px',
+              flexDirection: 'column'
+            }}>
+              <span className="material-icons-outlined" style={{
+                fontSize: '48px',
+                color: '#dc3545',
+                marginBottom: '16px'
+              }}>
+                error_outline
+              </span>
+              <p style={{
+                color: '#dc3545',
+                fontSize: '16px',
+                textAlign: 'center'
+              }}>
+                {error}
+              </p>
+            </div>
+          ) : observations.length > 0 ? (
+            observations.map(o => (
+              <MyObservationCard
+                key={o.id}
+                image={o.image}
+                commonName={o.commonName}
+                scientificName={o.scientificName}
+                location={o.location}
+                date={o.date}
+                onViewMore={() => handleViewMore(o.id)}
+                onEdit={() => handleEdit(o.id)}
+                onDelete={() => handleDelete(o.id)}
+              />
+            ))
+          ) : (
+            <div style={{
+              textAlign: 'center',
+              padding: '60px 20px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <span className="material-icons-outlined" style={{
+                fontSize: '64px',
+                color: theme.colors.disabled,
+                marginBottom: '16px'
+              }}>
+                visibility_off
+              </span>
+              <h3 style={{
+                fontSize: '18px',
+                fontWeight: 600,
+                color: theme.colors.primary,
+                marginBottom: '8px'
+              }}>
+                No tienes observaciones registradas
+              </h3>
+              <p style={{
+                fontSize: '14px',
+                color: theme.colors.disabled,
+                margin: 0
+              }}>
+                Haz clic en el botón + para crear tu primera observación
+              </p>
+            </div>
+          )}
         </div>
       </main>
     </div>

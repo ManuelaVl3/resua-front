@@ -215,7 +215,7 @@ const SearchObservations = () => {
                         key={observation.id}
                         image={observation.images && observation.images.length > 0 
                           ? observation.images[0].image_url 
-                          : 'https://via.placeholder.com/150x180/355543/FFFFFF?text=Sin+imagen'}
+                          : '/src/assets/images/default-species.jpg'}
                         commonName={observation.species.common_name}
                         scientificName={observation.species.scientific_name}
                         location={observation.location.location}
