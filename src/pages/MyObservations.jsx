@@ -8,6 +8,7 @@ const MyObservations = () => {
   const [observations, setObservations] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null)
 
   const observationsService = new ObservationsService()
 
@@ -48,15 +49,32 @@ const MyObservations = () => {
   }
 
   const handleEdit = (id) => {
-    console.log('Editar registro', id)
+    const url = `/edit-observation?id=${encodeURIComponent(id)}`
+    window.location.assign(url)
   }
 
-  const handleDelete = (id) => {
-    console.log('Eliminar registro', id)
+  const handleDeleteRequest = (id) => {
+    setConfirmDeleteId(id)
+  }
+
+  const handleConfirmDelete = async () => {
+    const id = confirmDeleteId
+    if (!id) return
+    try {
+      // TODO: Integrar con servicio de eliminación cuando esté disponible
+      setObservations(prev => prev.filter(o => o.id !== id))
+    } finally {
+      setConfirmDeleteId(null)
+    }
+  }
+
+  const handleCancelDelete = () => {
+    setConfirmDeleteId(null)
   }
 
   const handleViewMore = (id) => {
-    console.log('Ver más del registro', id)
+    const url = `/observation-detail?id=${encodeURIComponent(id)}`
+    window.location.assign(url)
   }
 
   return (
@@ -151,7 +169,7 @@ const MyObservations = () => {
                 date={o.date}
                 onViewMore={() => handleViewMore(o.id)}
                 onEdit={() => handleEdit(o.id)}
-                onDelete={() => handleDelete(o.id)}
+                onDelete={() => handleDeleteRequest(o.id)}
               />
             ))
           ) : (
@@ -188,6 +206,66 @@ const MyObservations = () => {
             </div>
           )}
         </div>
+
+        {confirmDeleteId !== null && (
+          <div style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0,0,0,0.35)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 2000
+          }}>
+            <div style={{
+              backgroundColor: 'white',
+              borderRadius: '15px',
+              padding: '20px 24px',
+              width: 'min(92vw, 420px)',
+              boxShadow: '0 8px 24px rgba(0,0,0,0.2)'
+            }}>
+              <h3 style={{
+                margin: 0,
+                marginBottom: '12px',
+                color: theme.colors.primary,
+                fontSize: '18px',
+                fontWeight: 600
+              }}>
+                ¿Eliminar este registro?
+              </h3>
+              <p style={{
+                margin: 0,
+                marginBottom: '16px',
+                color: theme.colors.primary,
+                fontSize: '14px'
+              }}>
+                Esta acción no se puede deshacer.
+              </p>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                <button onClick={handleCancelDelete} style={{
+                  padding: '10px 14px',
+                  borderRadius: '12px',
+                  border: `1px solid ${theme.colors.disabled}`,
+                  backgroundColor: 'white',
+                  color: theme.colors.primary,
+                  cursor: 'pointer'
+                }}>
+                  No
+                </button>
+                <button onClick={handleConfirmDelete} style={{
+                  padding: '10px 14px',
+                  borderRadius: '12px',
+                  border: 'none',
+                  backgroundColor: theme.colors.primary,
+                  color: 'white',
+                  cursor: 'pointer'
+                }}>
+                  Sí, eliminar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   )

@@ -43,8 +43,8 @@ const SearchObservations = () => {
   }
 
   const handleViewMore = (observationId) => {
-    console.log('Ver más detalles de la observación:', observationId)
-    // Aquí irá la navegación a la página de detalles
+    const url = `/observation-detail?id=${encodeURIComponent(observationId)}`
+    window.location.assign(url)
   }
 
   // Paginación
