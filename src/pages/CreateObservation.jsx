@@ -7,10 +7,11 @@ import Button from '../components/common/Button'
 import Input from '../components/common/Input'
 import TextArea from '../components/common/TextArea'
 import Select from '../components/common/Select'
+import ObservationsService from '../services/observations/ObservationsService'
 
 const CreateObservation = () => {
   const [formData, setFormData] = useState({
-    image: null,
+    images: [],
     commonName: '',
     scientificName: '',
     category: '',
@@ -20,6 +21,8 @@ const CreateObservation = () => {
 
   const [imagePreview, setImagePreview] = useState(null)
   const [showSuccessMessage, setShowSuccessMessage] = useState(false)
+  const [showErrorMessage, setShowErrorMessage] = useState(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [aiSuggestions, setAiSuggestions] = useState([])
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false)
   const [aiError, setAiError] = useState(null)
@@ -34,29 +37,29 @@ const CreateObservation = () => {
   }
 
   const handleImageUpload = (event) => {
-    const file = event.target.files[0]
-    if (file) {
+    const files = Array.from(event.target.files || [])
+    if (files.length > 0) {
       setFormData(prev => ({
         ...prev,
-        image: file
+        images: files
       }))
     }
   }
 
   useEffect(() => {
-    if (formData.image) {
+    if (formData.images && formData.images.length > 0) {
+      const first = formData.images[0]
       const reader = new FileReader()
       reader.onloadend = () => {
         setImagePreview(reader.result)
       }
-      reader.readAsDataURL(formData.image)
-      
-      identifySpecies(formData.image)
+      reader.readAsDataURL(first)
+      identifySpecies(first)
     } else {
       setImagePreview(null)
       setAiSuggestions([])
     }
-  }, [formData.image])
+  }, [formData.images])
 
   const identifySpecies = async (file) => {
     setIsLoadingSuggestions(true)
@@ -101,25 +104,57 @@ const CreateObservation = () => {
 
   const isFormValid = () => {
     return (
-      formData.image &&
+      formData.images.length > 0 &&
       formData.commonName.trim() !== '' &&
       formData.scientificName.trim() !== '' &&
-      formData.category.trim() !== '' &&
       formData.observationDetail.trim() !== '' &&
       formData.addressDescription.trim() !== ''
     )
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    if (isFormValid()) {
+    if (!isFormValid() || isSubmitting) return
+    setShowErrorMessage(null)
+    setIsSubmitting(true)
+
+    const readFileAsDataUrl = (file) => new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = () => resolve(reader.result)
+      reader.onerror = reject
+      reader.readAsDataURL(file)
+    })
+
+    try {
+      const imagesDataUrls = await Promise.all(formData.images.map(f => readFileAsDataUrl(f)))
+      const imagesPayload = imagesDataUrls.map((dataUrl, index) => ({
+        imageData: dataUrl,
+        imageOrder: index + 1
+      }))
+
+      const observationsService = new ObservationsService()
+      const body = {
+        userId: 1001,
+        commonName: formData.commonName,
+        scientificName: formData.scientificName,
+        longitude: -74.072092,
+        latitude: 4.710989,
+        location: formData.addressDescription,
+        description: formData.observationDetail,
+        images: imagesPayload
+      }
+
+      await observationsService.createObservation(body)
       setShowSuccessMessage(true)
-      
-      setTimeout(() => {
-        setShowSuccessMessage(false)
-      }, 3000)
-      
-      //TODO: Aquí irá la lógica para enviar al microservicio que guarda la info en bd - observations-ms
+      setTimeout(() => setShowSuccessMessage(false), 2500)
+      setFormData({ images: [], commonName: '', scientificName: '', category: '', observationDetail: '', addressDescription: '' })
+      setImagePreview(null)
+    } catch (err) {
+      console.error('Error creando observación:', err)
+      const apiMsg = err?.response?.data?.message || err?.response?.data?.detail
+      setShowErrorMessage(apiMsg || 'Error creando el registro. Intenta nuevamente.')
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -186,6 +221,29 @@ const CreateObservation = () => {
           }}>
             Registro guardado exitosamente
           </span>
+        </div>
+      )}
+
+      {showErrorMessage && (
+        <div style={{
+          position: 'fixed',
+          top: '20px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          backgroundColor: '#FDEDED',
+          border: `1px solid #dc3545`,
+          borderRadius: '12px',
+          padding: '12px 16px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+          zIndex: 10000,
+          animation: 'slideIn 0.3s ease-out',
+          color: '#dc3545'
+        }}>
+          <span className="material-icons-outlined" style={{ fontSize: '20px' }}>error</span>
+          <span style={{ fontSize: '14px', fontWeight: 600 }}>{showErrorMessage}</span>
         </div>
       )}
       
@@ -264,7 +322,7 @@ const CreateObservation = () => {
                     fontSize: '16px',
                     fontWeight: 500
                   }}>
-                    {formData.image ? formData.image.name : 'Sube una imagen de la especie'}
+                    {formData.images.length > 0 ? `${formData.images.length} archivo(s) seleccionado(s)` : 'Sube imagen(es) de la especie'}
                   </p>
                   <p style={{
                     color: theme.colors.disabled,
@@ -278,6 +336,7 @@ const CreateObservation = () => {
                 <input
                   type="file"
                   accept="image/jpeg,image/png,image/jpg"
+                  multiple
                   onChange={handleImageUpload}
                   style={{ display: 'none' }}
                   id="image-upload"
@@ -444,13 +503,13 @@ const CreateObservation = () => {
                 style={{ marginBottom: '3%' }}
               />
 
-              <Select
+                {/*<Select
                 label="Categoría"
                 placeholder="Selecciona una categoría"
                 value={formData.category}
                 onChange={(e) => handleInputChange('category', e.target.value)}
                 options={categoryOptions}
-              />
+              />*/}
             </div>
 
             <div>
@@ -539,10 +598,12 @@ const CreateObservation = () => {
                   color: theme.colors.light,
                   padding: '5px 48px',
                   fontSize: '18px',
-                  cursor: isFormValid() ? 'pointer' : 'not-allowed'
+                  cursor: isFormValid() && !isSubmitting ? 'pointer' : 'not-allowed',
+                  opacity: isSubmitting ? 0.8 : 1
                 }}
+                disabled={!isFormValid() || isSubmitting}
               >
-                Crear registro
+                {isSubmitting ? 'Creando...' : 'Crear registro'}
               </Button>
             </div>
           </div>

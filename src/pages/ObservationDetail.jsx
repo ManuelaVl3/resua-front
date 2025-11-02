@@ -1,12 +1,13 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState, useEffect } from 'react'
 import { theme } from '../styles/theme'
 import TopBar from '../components/layout/TopBar'
 import mapImage from '../assets/images/ui/map-placeholder.png'
+import ObservationsService from '../services/observations/ObservationsService'
 
 const ObservationDetail = () => {
   const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
   const observationId = params ? params.get('id') : null
-  const observation = useMemo(() => ({
+  const [observation, setObservation] = useState({
     id: 1,
     user: { username: '@jahashjas' },
     species: {
@@ -24,7 +25,40 @@ const ObservationDetail = () => {
         imageUrl: 'https://images.unsplash.com/photo-1548095115-45697e220cf3?q=80&w=1200&auto=format&fit=crop'
       }
     ]
-  }), [])
+  })
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    const fetchDetail = async () => {
+      if (!observationId) return
+      setLoading(true)
+      setError(null)
+      try {
+        const service = new ObservationsService()
+        const data = await service.getObservationById(observationId)
+        setObservation({
+          id: data.id,
+          user: { username: '@usuario' }, // placeholder mientras haya usuario en API
+          species: {
+            commonName: data.species.commonName,
+            scientificName: data.species.scientificName
+          },
+          location: { location: data.location.location },
+          createdAt: data.createdAt,
+          description: data.description,
+          category: data.category || '—',
+          images: data.images?.map(img => ({ imageUrl: img.imageUrl })) || []
+        })
+      } catch (e) {
+        console.error(e)
+        setError('Error cargando el detalle del registro')
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchDetail()
+  }, [observationId])
 
   const [comments, setComments] = useState([
     {
@@ -55,6 +89,12 @@ const ObservationDetail = () => {
     <div style={{ minHeight: '100vh', backgroundColor: theme.colors.white }}>
       <TopBar />
       <main style={{ padding: '3% 4% 4% 8%' }}>
+        {loading && (
+          <p style={{ color: theme.colors.primary }}>Cargando...</p>
+        )}
+        {error && (
+          <p style={{ color: '#dc3545' }}>{error}</p>
+        )}
         <div style={{
           display: 'grid',
           gridTemplateColumns: '1.1fr 1fr',
@@ -100,11 +140,7 @@ const ObservationDetail = () => {
             }}>
               Publicado por {observation.user.username}
             </p>
-            {observationId && (
-              <p style={{ color: theme.colors.disabled, fontSize: '12px', marginTop: 0 }}>
-                ID del registro: {observationId}
-              </p>
-            )}
+            {/** Ocultamos el ID del registro por solicitud **/}
 
             
             <div style={{
@@ -218,10 +254,12 @@ const ObservationDetail = () => {
               <p style={{ color: theme.colors.primary, fontSize: '14px', margin: 0 }}>{observation.description}</p>
             </div>
 
+            {/*
             <div style={{ marginBottom: '18px' }}>
               <h3 style={{ fontSize: '14px', fontWeight: 600, color: theme.colors.primary, margin: 0, marginBottom: '12px' }}>Categoría</h3>
               <p style={{ color: theme.colors.primary, fontSize: '14px', margin: 0 }}>{observation.category}</p>
             </div>
+            */}
 
             <div>
               <h3 style={{ fontSize: '14px', fontWeight: 600, color: theme.colors.primary, margin: 0, marginBottom: '12px' }}>Mapa</h3>

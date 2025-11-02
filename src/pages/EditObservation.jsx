@@ -15,6 +15,9 @@ const EditObservation = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [imagePreview, setImagePreview] = useState(null)
+  const [showSuccess, setShowSuccess] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
+  const [loadedObservation, setLoadedObservation] = useState(null)
   const [formData, setFormData] = useState({
     image: null,
     commonName: '',
@@ -32,12 +35,7 @@ const EditObservation = () => {
       setLoading(true)
       setError(null)
       try {
-        const list = await observationsService.getAllObservationsByUserId(1001)
-        const obs = list.find(o => String(o.id) === String(observationId))
-        if (!obs) {
-          setError('No se encontró el registro')
-          return
-        }
+        const obs = await observationsService.getObservationById(observationId)
         setFormData({
           image: null,
           commonName: obs.species?.commonName || '',
@@ -46,8 +44,11 @@ const EditObservation = () => {
           observationDetail: obs.description || '',
           addressDescription: obs.location?.location || ''
         })
+        setLoadedObservation(obs)
         if (obs.images && obs.images.length > 0) {
           setImagePreview(obs.images[0].imageUrl)
+        } else {
+          setImagePreview(null)
         }
       } catch (e) {
         console.error(e)
@@ -75,10 +76,8 @@ const EditObservation = () => {
 
   const isFormValid = () => {
     return (
-      (imagePreview || formData.image) &&
       formData.commonName.trim() !== '' &&
       formData.scientificName.trim() !== '' &&
-      formData.category.trim() !== '' &&
       formData.observationDetail.trim() !== '' &&
       formData.addressDescription.trim() !== ''
     )
@@ -87,18 +86,79 @@ const EditObservation = () => {
   const handleSubmit = (e) => {
     e.preventDefault()
     if (!isFormValid()) return
-    // TODO: llamada a servicio para actualizar (PUT)
-    alert('Registro actualizado (demo)')
+    setShowConfirm(true)
   }
+
+  const handleConfirmUpdate = async () => {
+    try {
+      const body = {
+        userId: loadedObservation?.userId || 1,
+        commonName: formData.commonName,
+        scientificName: formData.scientificName,
+        longitude: loadedObservation?.location?.longitude,
+        latitude: loadedObservation?.location?.latitude,
+        location: formData.addressDescription,
+        description: formData.observationDetail
+      }
+      await observationsService.updateObservation(observationId, body)
+      setShowConfirm(false)
+      setShowSuccess(true)
+      setTimeout(() => {
+        setShowSuccess(false)
+        if (typeof window !== 'undefined') window.location.reload()
+      }, 1200)
+    } catch (e) {
+      console.error(e)
+      setShowConfirm(false)
+      setError('Error guardando los cambios')
+    }
+  }
+
+  const handleCancelUpdate = () => setShowConfirm(false)
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: theme.colors.white }}>
       <TopBar />
       <main style={{ padding: '2% 3% 3% 7%' }}>
+        {showConfirm && (
+          <div style={{
+            position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.35)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3000
+          }}>
+            <div style={{ backgroundColor: 'white', borderRadius: '15px', padding: '20px 24px', width: 'min(92vw, 420px)' }}>
+              <h3 style={{ margin: 0, marginBottom: '10px', color: theme.colors.primary }}>¿Editar este registro?</h3>
+              <p style={{ margin: 0, marginBottom: '16px', color: theme.colors.primary, opacity: 0.9 }}>Se actualizará la información del avistamiento.</p>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                <button onClick={handleCancelUpdate} style={{ padding: '10px 14px', borderRadius: '12px', border: `1px solid ${theme.colors.disabled}`, backgroundColor: 'white', color: theme.colors.primary, cursor: 'pointer' }}>No</button>
+                <button onClick={handleConfirmUpdate} style={{ padding: '10px 14px', borderRadius: '12px', border: 'none', backgroundColor: theme.colors.primary, color: 'white', cursor: 'pointer' }}>Sí, editar</button>
+              </div>
+            </div>
+          </div>
+        )}
+        {showSuccess && (
+          <div style={{
+            position: 'fixed',
+            top: '90px',
+            right: '30px',
+            backgroundColor: '#E6F4EA',
+            border: `1px solid ${theme.colors.primary}`,
+            color: theme.colors.primary,
+            borderRadius: '15px',
+            padding: '12px 16px',
+            boxShadow: '0 6px 18px rgba(0,0,0,0.12)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            zIndex: 3000
+          }}>
+            <span className="material-icons-outlined" style={{ fontSize: '20px' }}>check_circle</span>
+            <span style={{ fontSize: '14px', fontWeight: 600 }}>Cambios guardados correctamente</span>
+          </div>
+        )}
         <h1 style={{
           fontSize: '28px', fontWeight: 600, color: theme.colors.primary, marginBottom: '24px'
         }}>
-          Editar registro {observationId ? `#${observationId}` : ''}
+          Editar registro
         </h1>
 
         {loading ? (
@@ -106,8 +166,8 @@ const EditObservation = () => {
         ) : error ? (
           <p style={{ color: '#dc3545' }}>{error}</p>
         ) : (
-          <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6%', alignItems: 'start' }}>
-            <div>
+          <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6%', alignItems: 'center' }}>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
               <div style={{
                 display: 'flex', alignItems: 'center', padding: '4% 5%', border: `1px solid ${theme.colors.disabled}`,
                 borderRadius: '15px', marginBottom: '24px', gap: '3%'
@@ -135,10 +195,10 @@ const EditObservation = () => {
 
               <Input label="Nombre común" value={formData.commonName} onChange={(e) => handleInputChange('commonName', e.target.value)} />
               <Input label="Nombre científico" value={formData.scientificName} onChange={(e) => handleInputChange('scientificName', e.target.value)} />
-              <Select label="Categoría" options={SPECIES_CATEGORIES} value={formData.category} onChange={(e) => handleInputChange('category', e.target.value)} placeholder="Selecciona una categoría" />
+                {/*<Select label="Categoría" options={SPECIES_CATEGORIES} value={formData.category} onChange={(e) => handleInputChange('category', e.target.value)} placeholder="Selecciona una categoría" />*/}
             </div>
 
-            <div>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
               <TextArea label="Detalle de avistamiento" rows={4} value={formData.observationDetail} onChange={(e) => handleInputChange('observationDetail', e.target.value)} />
 
               <div style={{ marginBottom: '24px' }}>

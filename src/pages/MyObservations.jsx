@@ -9,6 +9,7 @@ const MyObservations = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [confirmDeleteId, setConfirmDeleteId] = useState(null)
+  const [showDeleteSuccess, setShowDeleteSuccess] = useState(false)
 
   const observationsService = new ObservationsService()
 
@@ -20,7 +21,7 @@ const MyObservations = () => {
       
       const transformedObservations = response.map(observation => ({
         id: observation.id,
-        image: observation.images[0].imageUrl,
+        image: (observation.images && observation.images.length > 0) ? observation.images[0].imageUrl : undefined,
         commonName: observation.species.commonName,
         scientificName: observation.species.scientificName,
         location: observation.location.location,
@@ -61,8 +62,10 @@ const MyObservations = () => {
     const id = confirmDeleteId
     if (!id) return
     try {
-      // TODO: Integrar con servicio de eliminación cuando esté disponible
-      setObservations(prev => prev.filter(o => o.id !== id))
+      await observationsService.deleteObservation(id)
+      if (typeof window !== 'undefined') {
+        window.location.reload()
+      }
     } finally {
       setConfirmDeleteId(null)
     }
@@ -81,6 +84,16 @@ const MyObservations = () => {
     <div style={{ minHeight: '100vh', backgroundColor: '#F3EFE4' }}>
       <TopBar />
       <main style={{ padding: '2% 3% 3% 7%', position: 'relative' }}>
+        {showDeleteSuccess && (
+          <div style={{
+            position: 'fixed', top: '90px', right: '30px', zIndex: 2200,
+            backgroundColor: '#FDEDED', border: '1px solid #dc3545', color: '#dc3545',
+            borderRadius: '15px', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: '8px'
+          }}>
+            <span className="material-icons-outlined" style={{ fontSize: '20px' }}>delete</span>
+            <span style={{ fontSize: '14px', fontWeight: 600 }}>Registro eliminado</span>
+          </div>
+        )}
         <h1 style={{
           fontSize: '28px',
           fontWeight: 600,
