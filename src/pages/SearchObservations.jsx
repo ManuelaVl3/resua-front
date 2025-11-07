@@ -47,7 +47,6 @@ const SearchObservations = () => {
     window.location.assign(url)
   }
 
-  // Paginación
   const handlePageSizeChange = (e) => {
     const newSize = parseInt(e.target.value, 10)
     setPageSize(newSize)

@@ -7,6 +7,7 @@ import Button from '../components/common/Button'
 import Input from '../components/common/Input'
 import TextArea from '../components/common/TextArea'
 import Select from '../components/common/Select'
+import Alert from '../components/common/Alert'
 import ObservationsService from '../services/observations/ObservationsService'
 
 const CreateObservation = () => {
@@ -115,6 +116,14 @@ const CreateObservation = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!isFormValid() || isSubmitting) return
+    
+    const userId = localStorage.getItem('userId')
+    
+    if (!userId) {
+      window.location.href = '/login'
+      return
+    }
+    
     setShowErrorMessage(null)
     setIsSubmitting(true)
 
@@ -134,7 +143,7 @@ const CreateObservation = () => {
 
       const observationsService = new ObservationsService()
       const body = {
-        userId: 1001,
+        userId: parseInt(userId),
         commonName: formData.commonName,
         scientificName: formData.scientificName,
         longitude: -74.072092,
@@ -179,73 +188,37 @@ const CreateObservation = () => {
         `}
       </style>
       
-      {}
-      {showSuccessMessage && (
-        <div style={{
+      <Alert
+        type="success"
+        message="Registro guardado exitosamente"
+        show={showSuccessMessage}
+        onClose={() => setShowSuccessMessage(false)}
+        style={{
           position: 'fixed',
           top: '20px',
           left: '50%',
           transform: 'translateX(-50%)',
-          backgroundColor: '#f0f9f4',
-          border: `1px solid #10b981`,
-          borderRadius: '12px',
-          padding: '16px 24px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
           zIndex: 10000,
-          animation: 'slideIn 0.3s ease-out'
-        }}>
-          {}
-          <div style={{
-            width: '24px',
-            height: '24px',
-            backgroundColor: '#10b981',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            fontSize: '16px',
-            fontWeight: 'bold'
-          }}>
-            ✓
-          </div>
-          
-          {}
-          <span style={{
-            color: '#374151',
-            fontSize: '16px',
-            fontWeight: 500
-          }}>
-            Registro guardado exitosamente
-          </span>
-        </div>
-      )}
+          maxWidth: '500px',
+          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+        }}
+      />
 
-      {showErrorMessage && (
-        <div style={{
+      <Alert
+        type="error"
+        message={showErrorMessage}
+        show={!!showErrorMessage}
+        onClose={() => setShowErrorMessage(null)}
+        style={{
           position: 'fixed',
           top: '20px',
           left: '50%',
           transform: 'translateX(-50%)',
-          backgroundColor: '#FDEDED',
-          border: `1px solid #dc3545`,
-          borderRadius: '12px',
-          padding: '12px 16px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
           zIndex: 10000,
-          animation: 'slideIn 0.3s ease-out',
-          color: '#dc3545'
-        }}>
-          <span className="material-icons-outlined" style={{ fontSize: '20px' }}>error</span>
-          <span style={{ fontSize: '14px', fontWeight: 600 }}>{showErrorMessage}</span>
-        </div>
-      )}
+          maxWidth: '500px',
+          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+        }}
+      />
       
       <TopBar />
       

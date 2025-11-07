@@ -4,7 +4,9 @@ import TopBar from '../components/layout/TopBar'
 import Input from '../components/common/Input'
 import TextArea from '../components/common/TextArea'
 import Select from '../components/common/Select'
-import Button from '../components/common/Button'
+import SaveButton from '../components/common/SaveButton'
+import CancelButton from '../components/common/CancelButton'
+import Alert from '../components/common/Alert'
 import { SPECIES_CATEGORIES } from '../utils/constants'
 import ObservationsService from '../services/observations/ObservationsService'
 
@@ -135,26 +137,19 @@ const EditObservation = () => {
             </div>
           </div>
         )}
-        {showSuccess && (
-          <div style={{
+        <Alert
+          type="success"
+          message="Cambios guardados correctamente"
+          show={showSuccess}
+          onClose={() => setShowSuccess(false)}
+          style={{
             position: 'fixed',
             top: '90px',
             right: '30px',
-            backgroundColor: '#E6F4EA',
-            border: `1px solid ${theme.colors.primary}`,
-            color: theme.colors.primary,
-            borderRadius: '15px',
-            padding: '12px 16px',
-            boxShadow: '0 6px 18px rgba(0,0,0,0.12)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            zIndex: 3000
-          }}>
-            <span className="material-icons-outlined" style={{ fontSize: '20px' }}>check_circle</span>
-            <span style={{ fontSize: '14px', fontWeight: 600 }}>Cambios guardados correctamente</span>
-          </div>
-        )}
+            zIndex: 3000,
+            maxWidth: '400px'
+          }}
+        />
         <h1 style={{
           fontSize: '28px', fontWeight: 600, color: theme.colors.primary, marginBottom: '24px'
         }}>
@@ -164,7 +159,12 @@ const EditObservation = () => {
         {loading ? (
           <p style={{ color: theme.colors.primary }}>Cargando...</p>
         ) : error ? (
-          <p style={{ color: '#dc3545' }}>{error}</p>
+          <Alert
+            type="error"
+            message={error}
+            show={!!error}
+            onClose={() => setError(null)}
+          />
         ) : (
           <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6%', alignItems: 'center' }}>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -211,23 +211,10 @@ const EditObservation = () => {
               <TextArea label="Descripción de la dirección de avistamiento" rows={4} value={formData.addressDescription} onChange={(e) => handleInputChange('addressDescription', e.target.value)} />
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '8px' }}>
-                <button
-                  type="button"
-                  onClick={() => window.history.back()}
-                  style={{
-                    padding: '10px 18px',
-                    borderRadius: '15px',
-                    border: `1px solid ${theme.colors.disabled}`,
-                    backgroundColor: 'white',
-                    color: theme.colors.primary,
-                    cursor: 'pointer'
-                  }}
-                >
-                  Cancelar
-                </button>
-                <Button type="submit" variant="primary" disabled={!isFormValid()} style={{ backgroundColor: isFormValid() ? theme.colors.primary : theme.colors.disabled, color: 'white', border: 'none', borderRadius: '15px', padding: '10px 18px', cursor: isFormValid() ? 'pointer' : 'not-allowed' }}>
+                <CancelButton onClick={() => window.history.back()} style={{ padding: '10px 18px' }} />
+                <SaveButton type="submit" isValid={isFormValid()} style={{ padding: '10px 18px' }}>
                   Guardar cambios
-                </Button>
+                </SaveButton>
               </div>
             </div>
           </form>

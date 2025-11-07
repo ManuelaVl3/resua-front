@@ -73,7 +73,6 @@ const Select = ({
           position: 'absolute',
           right: '12px',
           top: '50%',
-          transform: 'translateY(-50%)',
           fontSize: '16px',
           color: theme.colors.disabled,
           transition: 'transform 0.3s ease',

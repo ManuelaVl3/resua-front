@@ -2,6 +2,14 @@ import React from 'react'
 import { theme } from '../../styles/theme'
 
 const TopBar = () => {
+  const handleUserIconClick = () => {
+    window.location.href = '/login'
+  }
+
+  const handleRegistrosClick = () => {
+    window.location.href = '/search-observation'
+  }
+
   return (
     <header 
       style={{
@@ -32,27 +40,46 @@ const TopBar = () => {
       <div style={{ 
         display: 'flex', 
         alignItems: 'center', 
-        gap: '16px',
+        gap: '40px',
         color: theme.colors.light 
       }}>
-        <span style={{ 
-          fontSize: '16px',
-          color: theme.colors.light 
-        }}>
+        <span 
+          onClick={handleRegistrosClick}
+          style={{ 
+            fontSize: '16px',
+            color: theme.colors.light,
+            cursor: 'pointer',
+            transition: 'opacity 0.3s ease'
+          }}
+          onMouseOver={(e) => e.currentTarget.style.opacity = '0.8'}
+          onMouseOut={(e) => e.currentTarget.style.opacity = '1'}
+        >
           Registros
         </span>
         
         {/* Icono de usuario */}
-        <div style={{
-          width: '32px',
-          height: '32px',
-          backgroundColor: theme.colors.light,
-          borderRadius: '50%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          cursor: 'pointer'
-        }}>
+        <div 
+          onClick={handleUserIconClick}
+          style={{
+            width: '32px',
+            height: '32px',
+            backgroundColor: theme.colors.light,
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+          }}
+          onMouseOver={(e) => {
+            e.currentTarget.style.transform = 'scale(1.1)'
+            e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)'
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.transform = 'scale(1)'
+            e.currentTarget.style.boxShadow = 'none'
+          }}
+        >
           <svg 
             width="16" 
             height="16" 

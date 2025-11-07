@@ -33,7 +33,6 @@ const ObservationsList = () => {
 
   const handleViewMore = (observationId) => {
     console.log('Ver más detalles de la observación:', observationId)
-    // Aquí irá la navegación a la página de detalles
   }
 
   return (

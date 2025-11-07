@@ -140,8 +140,6 @@ const ObservationDetail = () => {
             }}>
               Publicado por {observation.user.username}
             </p>
-            {/** Ocultamos el ID del registro por solicitud **/}
-
             
             <div style={{
               marginTop: '24px',

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { theme } from '../styles/theme'
 import TopBar from '../components/layout/TopBar'
 import MyObservationCard from '../components/observations/MyObservationCard'
+import Alert from '../components/common/Alert'
 import ObservationsService from '../services/observations/ObservationsService'
 
 const MyObservations = () => {
@@ -14,10 +15,17 @@ const MyObservations = () => {
   const observationsService = new ObservationsService()
 
   const loadObservations = async () => {
+    const userId = localStorage.getItem('userId')
+    
+    if (!userId) {
+      window.location.href = '/login'
+      return
+    }
+    
     setLoading(true)
     setError(null)
     try {
-      const response = await observationsService.getAllObservationsByUserId(1001)
+      const response = await observationsService.getAllObservationsByUserId(userId)
       
       const transformedObservations = response.map(observation => ({
         id: observation.id,
@@ -81,19 +89,22 @@ const MyObservations = () => {
   }
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#F3EFE4' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: theme.colors.white }}>
       <TopBar />
       <main style={{ padding: '2% 3% 3% 7%', position: 'relative' }}>
-        {showDeleteSuccess && (
-          <div style={{
-            position: 'fixed', top: '90px', right: '30px', zIndex: 2200,
-            backgroundColor: '#FDEDED', border: '1px solid #dc3545', color: '#dc3545',
-            borderRadius: '15px', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: '8px'
-          }}>
-            <span className="material-icons-outlined" style={{ fontSize: '20px' }}>delete</span>
-            <span style={{ fontSize: '14px', fontWeight: 600 }}>Registro eliminado</span>
-          </div>
-        )}
+        <Alert
+          type="error"
+          message="Registro eliminado"
+          show={showDeleteSuccess}
+          onClose={() => setShowDeleteSuccess(false)}
+          style={{
+            position: 'fixed',
+            top: '90px',
+            right: '30px',
+            zIndex: 2200,
+            maxWidth: '400px'
+          }}
+        />
         <h1 style={{
           fontSize: '28px',
           fontWeight: 600,
@@ -149,27 +160,13 @@ const MyObservations = () => {
               </p>
             </div>
           ) : error ? (
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '60px 20px',
-              flexDirection: 'column'
-            }}>
-              <span className="material-icons-outlined" style={{
-                fontSize: '48px',
-                color: '#dc3545',
-                marginBottom: '16px'
-              }}>
-                error_outline
-              </span>
-              <p style={{
-                color: '#dc3545',
-                fontSize: '16px',
-                textAlign: 'center'
-              }}>
-                {error}
-              </p>
+            <div style={{ padding: '20px' }}>
+              <Alert
+                type="error"
+                message={error}
+                show={!!error}
+                onClose={() => setError(null)}
+              />
             </div>
           ) : observations.length > 0 ? (
             observations.map(o => (
@@ -285,5 +282,3 @@ const MyObservations = () => {
 }
 
 export default MyObservations
-
-
