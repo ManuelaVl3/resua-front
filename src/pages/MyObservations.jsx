@@ -105,6 +105,34 @@ const MyObservations = () => {
             maxWidth: '400px'
           }}
         />
+        
+        {/* Botón Volver */}
+        <button
+          onClick={() => window.location.href = '/profile'}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            color: theme.colors.primary,
+            fontSize: '16px',
+            fontFamily: theme.fonts.primary,
+            fontWeight: 500,
+            marginBottom: '24px',
+            padding: '8px 0',
+            transition: 'opacity 0.3s ease'
+          }}
+          onMouseOver={(e) => e.currentTarget.style.opacity = '0.7'}
+          onMouseOut={(e) => e.currentTarget.style.opacity = '1'}
+        >
+          <span className="material-icons-outlined" style={{ fontSize: '20px' }}>
+            arrow_back
+          </span>
+          Volver
+        </button>
+
         <h1 style={{
           fontSize: '28px',
           fontWeight: 600,

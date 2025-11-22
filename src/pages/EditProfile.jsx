@@ -35,18 +35,25 @@ const EditProfile = () => {
 
       try {
         setLoading(true)
+        console.log('Cargando datos del usuario con userId:', userId)
         const userData = await authService.getUserById(userId)
+        console.log('Datos recibidos del backend:', userData)
         
         const initialData = {
-          firstName: userData.name,
-          lastName: userData.lastName,
-          email: userData.email
+          firstName: userData.name || '',
+          lastName: userData.lastName || '',
+          email: userData.email || ''
         }
         
+        console.log('Datos mapeados para el formulario:', initialData)
         setFormData(initialData)
         setOriginalData(initialData)
       } catch (error) {
         console.error('Error al cargar datos del usuario:', error)
+        if (error.response) {
+          console.error('Respuesta del error:', error.response.data)
+          console.error('Status del error:', error.response.status)
+        }
         setShowError('Error al cargar tus datos. Por favor, intenta de nuevo.')
       } finally {
         setLoading(false)
@@ -150,11 +157,38 @@ const EditProfile = () => {
         flex: 1,
         padding: '40px 60px'
       }}>
+        {/* Botón Volver */}
+        <button
+          onClick={() => window.location.href = '/profile'}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            color: theme.colors.primary,
+            fontSize: '16px',
+            fontFamily: theme.fonts.primary,
+            fontWeight: 500,
+            marginTop: '45px',
+            marginBottom: '24px',
+            padding: '8px 0',
+            transition: 'opacity 0.3s ease'
+          }}
+          onMouseOver={(e) => e.currentTarget.style.opacity = '0.7'}
+          onMouseOut={(e) => e.currentTarget.style.opacity = '1'}
+        >
+          <span className="material-icons-outlined" style={{ fontSize: '20px' }}>
+            arrow_back
+          </span>
+          Volver
+        </button>
+
         <div style={{
           display: 'flex',
           alignItems: 'center',
           gap: '12px',
-          marginTop: '45px',
           marginBottom: '100px'
         }}>
           <span className="material-icons-outlined" style={{ fontSize: '28px', color: theme.colors.primary }}>

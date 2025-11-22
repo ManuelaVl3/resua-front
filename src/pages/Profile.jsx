@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import TopBar from '../components/layout/TopBar'
-import AuthService from '../services/AuthService'
 import { theme } from '../styles/theme'
 
 const Profile = () => {
-  const authService = new AuthService()
   const [userName, setUserName] = useState('Usuario')
 
   useEffect(() => {
@@ -34,10 +32,6 @@ const Profile = () => {
     console.log('Base de datos RESUA')
   }
 
-  const handleLogout = () => {
-    authService.logout()
-  }
-
   return (
     <div style={{
       minHeight: '100vh',
@@ -53,47 +47,20 @@ const Profile = () => {
         flexDirection: 'column',
         padding: '40px 60px'
       }}>
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
+        {/* Mensaje de bienvenida */}
+        <h1 style={{
+          fontSize: '24px',
+          fontWeight: 600,
+          color: theme.colors.primary,
           marginTop: '45px',
-          marginBottom: '40px'
+          marginBottom: '40px',
+          textAlign: 'left',
+          fontFamily: theme.fonts.primary
         }}>
-          <h1 style={{
-            fontSize: '24px',
-            fontWeight: 600,
-            color: theme.colors.primary,
-            margin: 0,
-            textAlign: 'left',
-            fontFamily: theme.fonts.primary
-          }}>
-            Bienvenid@, {userName} 👋
-          </h1>
-          
-          <a
-            onClick={handleLogout}
-            style={{
-              fontSize: '14px',
-              color: theme.colors.disabled,
-              textDecoration: 'none',
-              cursor: 'pointer',
-              fontFamily: theme.fonts.primary,
-              transition: 'color 0.3s ease',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px'
-            }}
-            onMouseOver={(e) => e.currentTarget.style.color = theme.colors.primary}
-            onMouseOut={(e) => e.currentTarget.style.color = theme.colors.disabled}
-          >
-            <span className="material-icons-outlined" style={{ fontSize: '18px' }}>
-              logout
-            </span>
-            Cerrar sesión
-          </a>
-        </div>
+          Bienvenid@, {userName} 👋
+        </h1>
 
+        {/* Opciones de navegación */}
         <div style={{
           flex: 1,
           display: 'flex',

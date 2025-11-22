@@ -110,8 +110,7 @@ const Login = () => {
   }
 
   const handleResetPassword = () => {
-    // Aquí iría la navegación a la página de recuperación de contraseña
-    console.log('Restablecer contraseña')
+    window.location.href = '/forgot-password'
   }
 
   return (

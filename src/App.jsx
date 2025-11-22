@@ -7,9 +7,12 @@ import Login from './pages/Login'
 import Profile from './pages/Profile'
 import EditProfile from './pages/EditProfile'
 import Register from './pages/Register'
+import ForgotPassword from './pages/ForgotPassword'
+import Home from './pages/Home'
 
 function App() {
   const path = typeof window !== 'undefined' ? window.location.pathname : '/'
+  const isHome = path === '/'
   const isCreate = path === '/create-observation'
   const isDetail = path === '/observation-detail'
   const isEdit = path === '/edit-observation'
@@ -19,20 +22,18 @@ function App() {
   const isProfile = path === '/profile'
   const isEditProfile = path === '/edit-profile'
   const isRegister = path === '/register'
+  const isForgotPassword = path === '/forgot-password'
 
-  if (typeof window !== 'undefined') {
-    if (path === '/') {
-      window.history.replaceState(null, '', '/profile')
-    } else if (!isCreate && !isDetail && !isEdit && !isMy && !isSearch && !isLogin && !isProfile && !isEditProfile && !isRegister) {
-      window.history.replaceState(null, '', '/profile')
-    }
-  }
   return (
     <div>
-      {isLogin ? (
+      {isHome ? (
+        <Home />
+      ) : isLogin ? (
         <Login />
       ) : isRegister ? (
         <Register />
+      ) : isForgotPassword ? (
+        <ForgotPassword />
       ) : isProfile ? (
         <Profile />
       ) : isEditProfile ? (
